@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FICSIT Smelting Calculator</title>
+    <title>FICSIT Ingot Calculator v4.0 (Slider UI)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,157 +11,459 @@
             color: #ffffff;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: flex-start;
+            min-height: 100vh;
             margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        .wrapper {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
         }
         .container {
             background-color: #3b3b4a;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            width: 350px;
-            border-top: 5px solid #fa6a0a; /* FICSIT Orange */
+            width: 380px; /* Slightly wider to accommodate sliders */
+            border-top: 5px solid #fa6a0a;
+        }
+        .alt-container {
+            border-top: 5px solid #00a8ff; 
         }
         h2 {
             text-align: center;
             margin-top: 0;
-            color: #fa6a0a;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .form-group {
+        .ficsit-orange { color: #fa6a0a; }
+        .ficsit-blue { color: #00a8ff; }
+        
+        .form-group { margin-bottom: 15px; }
+        .flex-group { 
+            display: flex; 
+            gap: 10px; 
             margin-bottom: 15px;
         }
+        .flex-group > div { flex: 1; }
+        
         label {
             display: block;
             margin-bottom: 5px;
-            font-size: 14px;
+            font-size: 13px;
             color: #cccccc;
         }
-        select {
+        select, input[type="number"] {
             width: 100%;
             padding: 10px;
             background-color: #2b2b36;
             color: white;
             border: 1px solid #555;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
+            box-sizing: border-box;
         }
-        select:focus {
+        select:focus, input[type="number"]:focus {
             border-color: #fa6a0a;
         }
+        .alt-container select:focus, .alt-container input[type="number"]:focus {
+            border-color: #00a8ff;
+        }
+
+        /* --- CUSTOM GAME SLIDER UI --- */
+        .slider-container {
+            background-color: #e6e6ea;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #222;
+        }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .slider-header label {
+            color: #333;
+            font-weight: bold;
+            margin: 0;
+            font-size: 14px;
+        }
+        .slider-input-wrapper {
+            background: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+        }
+        .slider-input-wrapper input[type="number"] {
+            width: 50px;
+            padding: 2px;
+            background: transparent;
+            color: #fa6a0a;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+            outline: none;
+        }
+        .slider-input-wrapper span {
+            color: #fa6a0a;
+            font-weight: bold;
+            font-size: 16px;
+            margin-left: 2px;
+        }
+        
+        /* The range slider itself */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 10px 0;
+        }
+        input[type="range"]:focus {
+            outline: none;
+        }
+        /* Track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 14px;
+            cursor: pointer;
+            background: #ccc;
+            border-radius: 2px;
+            border: 1px solid #aaa;
+        }
+        /* Thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            border: 2px solid #555;
+            height: 22px;
+            width: 12px;
+            border-radius: 3px;
+            background: #ffffff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .slider-marks {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 10px;
+            padding: 0 2px;
+        }
+        .slider-marks span {
+            position: relative;
+        }
+        /* Positioning the text to align with typical 100, 150, 200, 250 stops on a 1-250 scale */
+        .mark-0 { width: 40%; text-align: left; }
+        .mark-100 { width: 20%; text-align: left; }
+        .mark-150 { width: 20%; text-align: center; }
+        .mark-200 { width: 20%; text-align: center; }
+        .mark-250 { text-align: right; }
+
+        /* Color shifts for Alt container slider */
+        .alt-container .slider-input-wrapper input[type="number"],
+        .alt-container .slider-input-wrapper span {
+            color: #00a8ff;
+        }
+
         .results {
             margin-top: 25px;
             padding: 15px;
             background-color: #22222c;
             border-radius: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             text-align: center;
         }
-        .results p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .highlight {
-            color: #fa6a0a;
-            font-size: 24px;
-            font-weight: bold;
-            display: block;
-            margin-top: 5px;
-        }
+        .results p { margin: 0; font-size: 14px; color: #aaa; }
+        .highlight { font-size: 22px; font-weight: bold; display: block; margin-top: 5px; }
+        .full-width { grid-column: span 2; border-top: 1px solid #444; padding-top: 15px; }
+        .divider { border-top: 1px solid #444; padding-top: 15px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Smelter Calc</h2>
-    
-    <div class="form-group">
-        <label for="resource">Resource</label>
-        <select id="resource">
-            <option value="iron">Iron Ore</option>
-            <option value="copper">Copper Ore</option>
-            <option value="caterium">Caterium Ore</option>
-        </select>
+<div class="wrapper">
+    <div class="container">
+        <h2 class="ficsit-orange">Standard Smelting</h2>
+        
+        <div class="form-group">
+            <label>Resource</label>
+            <select id="resource">
+                <option value="iron" data-in="30" data-out="30">Iron Ore</option>
+                <option value="copper" data-in="30" data-out="30">Copper Ore</option>
+                <option value="caterium" data-in="45" data-out="15">Caterium Ore</option>
+            </select>
+        </div>
+
+        <div class="flex-group">
+            <div>
+                <label>Node Purity</label>
+                <select id="purity">
+                    <option value="0.5">Impure</option>
+                    <option value="1" selected>Normal</option>
+                    <option value="2">Pure</option>
+                </select>
+            </div>
+            <div>
+                <label>Miner Level</label>
+                <select id="miner">
+                    <option value="60">Mk.1</option>
+                    <option value="120">Mk.2</option>
+                    <option value="240">Mk.3</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="slider-container">
+            <div class="slider-header">
+                <label>Miner Clock Speed</label>
+                <div class="slider-input-wrapper">
+                    <input type="number" id="minerClockNum" value="100" min="1" max="250">
+                    <span>%</span>
+                </div>
+            </div>
+            <input type="range" id="minerClockSlider" value="100" min="1" max="250">
+            <div class="slider-marks">
+                <span class="mark-0">0%</span>
+                <span class="mark-100">100%</span>
+                <span class="mark-150">150%</span>
+                <span class="mark-200">200%</span>
+                <span class="mark-250">250%</span>
+            </div>
+        </div>
+
+        <div class="slider-container">
+            <div class="slider-header">
+                <label>Smelter Clock Speed</label>
+                <div class="slider-input-wrapper">
+                    <input type="number" id="smelterClockNum" value="100" min="1" max="250">
+                    <span>%</span>
+                </div>
+            </div>
+            <input type="range" id="smelterClockSlider" value="100" min="1" max="250">
+            <div class="slider-marks">
+                <span class="mark-0">0%</span>
+                <span class="mark-100">100%</span>
+                <span class="mark-150">150%</span>
+                <span class="mark-200">200%</span>
+                <span class="mark-250">250%</span>
+            </div>
+        </div>
+
+        <div class="form-group divider">
+            <label>Extraction Belt (Miner to Smelters)</label>
+            <select id="beltInput">
+                <option value="60">Mk.1 (60/min)</option>
+                <option value="120">Mk.2 (120/min)</option>
+                <option value="270">Mk.3 (270/min)</option>
+                <option value="480">Mk.4 (480/min)</option>
+                <option value="780">Mk.5 (780/min)</option>
+                <option value="1200" selected>Mk.6 (1200/min)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Logistics Belt (Smelters to Base)</label>
+            <select id="beltOutput">
+                <option value="60">Mk.1 (60/min)</option>
+                <option value="120">Mk.2 (120/min)</option>
+                <option value="270">Mk.3 (270/min)</option>
+                <option value="480">Mk.4 (480/min)</option>
+                <option value="780">Mk.5 (780/min)</option>
+                <option value="1200" selected>Mk.6 (1200/min)</option>
+            </select>
+        </div>
+
+        <div class="results">
+            <p>Ore Extracted: <br><span id="orePerMin" class="highlight ficsit-orange">0</span></p>
+            <p>Smelters Needed: <br><span id="smeltersNeeded" class="highlight ficsit-orange">0</span></p>
+            <div class="full-width">
+                <p>Ingots Produced: <span id="ingotsPerMin" style="color: white; font-weight: bold; font-size: 18px;">0 / min</span></p>
+                <p style="margin-top: 10px;">Output Belts Needed: <br><span id="beltsNeeded" class="highlight ficsit-orange">0</span></p>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="purity">Node Purity</label>
-        <select id="purity">
-            <option value="0.5">Impure</option>
-            <option value="1" selected>Normal</option>
-            <option value="2">Pure</option>
-        </select>
-    </div>
+    <div class="container alt-container">
+        <h2 class="ficsit-blue">Alternate Recipes</h2>
+        
+        <div class="form-group">
+            <label>Recipe</label>
+            <select id="altRecipe">
+                <option value="pure_iron" data-primary="35" data-secname="Water" data-secrate="20" data-out="65" data-machine="Refineries">Pure Iron Ingot</option>
+                <option value="pure_copper" data-primary="15" data-secname="Water" data-secrate="10" data-out="37.5" data-machine="Refineries">Pure Copper Ingot</option>
+                <option value="pure_cat" data-primary="24" data-secname="Water" data-secrate="24" data-out="12" data-machine="Refineries">Pure Caterium Ingot</option>
+                <option value="alloy_iron" data-primary="20" data-secname="Copper Ore" data-secrate="20" data-out="50" data-machine="Foundries">Iron Alloy Ingot</option>
+                <option value="alloy_copper" data-primary="50" data-secname="Iron Ore" data-secrate="25" data-out="100" data-machine="Foundries">Copper Alloy Ingot</option>
+            </select>
+        </div>
 
-    <div class="form-group">
-        <label for="miner">Miner Level</label>
-        <select id="miner">
-            <option value="60">Mk.1</option>
-            <option value="120">Mk.2</option>
-            <option value="240">Mk.3</option>
-        </select>
-    </div>
+        <div class="form-group divider">
+            <label>Primary Input (Ore/min)</label>
+            <input type="number" id="altInputOre" value="120" min="0">
+        </div>
 
-    <div class="form-group">
-        <label for="belt">Belt Speed (Max Output)</label>
-        <select id="belt">
-            <option value="60">Mk.1 (60/min)</option>
-            <option value="120">Mk.2 (120/min)</option>
-            <option value="270">Mk.3 (270/min)</option>
-            <option value="480">Mk.4 (480/min)</option>
-            <option value="780">Mk.5 (780/min)</option>
-            <option value="1200">Mk.6 (1200/min)</option>
-        </select>
-    </div>
+        <div class="slider-container" style="border-color: #555;">
+            <div class="slider-header">
+                <label>Machine Clock Speed</label>
+                <div class="slider-input-wrapper">
+                    <input type="number" id="altMachineClockNum" value="100" min="1" max="250">
+                    <span>%</span>
+                </div>
+            </div>
+            <input type="range" id="altMachineClockSlider" value="100" min="1" max="250">
+            <div class="slider-marks">
+                <span class="mark-0">0%</span>
+                <span class="mark-100">100%</span>
+                <span class="mark-150">150%</span>
+                <span class="mark-200">200%</span>
+                <span class="mark-250">250%</span>
+            </div>
+        </div>
 
-    <div class="results">
-        <p>Actual Ore Extracted: <br><span id="orePerMin" class="highlight">60 / min</span></p>
-        <p>Smelters Needed: <br><span id="smeltersNeeded" class="highlight">2</span></p>
+        <div class="results">
+            <p><span id="machineType">Machines</span> Needed: <br><span id="altMachinesNeeded" class="highlight ficsit-blue">0</span></p>
+            <p><span id="secResourceName">Secondary</span> Needed: <br><span id="altSecNeeded" class="highlight ficsit-blue">0</span></p>
+            <div class="full-width">
+                <p>Ingots Produced: <span id="altIngotsPerMin" style="color: white; font-weight: bold; font-size: 18px;">0 / min</span></p>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Grab all our dropdowns and display fields
-    const puritySelect = document.getElementById('purity');
-    const minerSelect = document.getElementById('miner');
-    const beltSelect = document.getElementById('belt');
-    const orePerMinDisplay = document.getElementById('orePerMin');
-    const smeltersNeededDisplay = document.getElementById('smeltersNeeded');
+    const formatNum = (num) => parseFloat(num.toFixed(2));
 
-    // Standard smelter consumes 30 ore per minute for Iron/Copper
-    const SMELTER_CONSUMPTION_RATE = 30; 
+    // --- SLIDER SYNC AND COLOR FILL FUNCTION ---
+    function syncSlider(numId, sliderId, color) {
+        const numInput = document.getElementById(numId);
+        const sliderInput = document.getElementById(sliderId);
 
-    function calculateEfficiency() {
-        // 1. Get the values from the dropdowns
-        const purityMultiplier = parseFloat(puritySelect.value);
-        const minerBaseRate = parseFloat(minerSelect.value);
-        const maxBeltSpeed = parseFloat(beltSelect.value);
+        function updateFill() {
+            // Calculate percentage for CSS linear-gradient
+            const val = sliderInput.value;
+            const min = sliderInput.min;
+            const max = sliderInput.max;
+            const percent = ((val - min) / (max - min)) * 100;
+            sliderInput.style.background = `linear-gradient(to right, ${color} ${percent}%, #ccc ${percent}%)`;
+        }
 
-        // 2. Calculate theoretical extraction rate
-        let theoreticalExtraction = minerBaseRate * purityMultiplier;
+        sliderInput.addEventListener('input', (e) => {
+            numInput.value = e.target.value;
+            updateFill();
+            if(numId.includes('alt')) calcAlternate();
+            else calcStandard();
+        });
 
-        // 3. Cap the extraction by the belt speed (a Mk.3 miner on a pure node is bottlenecked by the belt)
-        let actualExtraction = Math.min(theoreticalExtraction, maxBeltSpeed);
+        numInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            // Bound the manual text input so it doesn't break the slider visually
+            if(val > 250) val = 250;
+            if(val < 1 && val !== '') val = 1; 
+            sliderInput.value = val || 1;
+            updateFill();
+            if(numId.includes('alt')) calcAlternate();
+            else calcStandard();
+        });
 
-        // 4. Calculate how many smelters are needed
-        let smelters = actualExtraction / SMELTER_CONSUMPTION_RATE;
-
-        // 5. Update the UI
-        orePerMinDisplay.innerText = actualExtraction + " / min";
-        
-        // If it's a decimal, we format it nicely (e.g., 2.5 smelters means 2 at 100% and 1 at 50%)
-        smeltersNeededDisplay.innerText = Number.isInteger(smelters) ? smelters : smelters.toFixed(2);
+        // Initialize fill on load
+        updateFill();
     }
 
-    // Add event listeners so the math updates instantly when a user changes a dropdown
-    puritySelect.addEventListener('change', calculateEfficiency);
-    minerSelect.addEventListener('change', calculateEfficiency);
-    beltSelect.addEventListener('change', calculateEfficiency);
+    // Attach sync logic to all three sliders
+    syncSlider('minerClockNum', 'minerClockSlider', '#fa6a0a');
+    syncSlider('smelterClockNum', 'smelterClockSlider', '#fa6a0a');
+    syncSlider('altMachineClockNum', 'altMachineClockSlider', '#00a8ff');
 
-    // Run once on load to show initial math
-    calculateEfficiency();
+
+    // --- STANDARD SMELTING LOGIC ---
+    const resourceSelect = document.getElementById('resource');
+    const puritySelect = document.getElementById('purity');
+    const minerSelect = document.getElementById('miner');
+    const beltInputSelect = document.getElementById('beltInput');
+    const beltOutputSelect = document.getElementById('beltOutput');
+    const minerClockNum = document.getElementById('minerClockNum');
+    const smelterClockNum = document.getElementById('smelterClockNum');
+
+    function calcStandard() {
+        const purityMultiplier = parseFloat(puritySelect.value);
+        const minerBaseRate = parseFloat(minerSelect.value);
+        const maxInputSpeed = parseFloat(beltInputSelect.value);
+        const maxOutputSpeed = parseFloat(beltOutputSelect.value);
+        
+        const minerClock = (parseFloat(minerClockNum.value) || 100) / 100;
+        const smelterClock = (parseFloat(smelterClockNum.value) || 100) / 100;
+        
+        const selectedResource = resourceSelect.options[resourceSelect.selectedIndex];
+        const oreIn = parseFloat(selectedResource.getAttribute('data-in'));
+        const ingotOut = parseFloat(selectedResource.getAttribute('data-out'));
+
+        let theoreticalExtraction = minerBaseRate * purityMultiplier * minerClock;
+        let actualExtraction = Math.min(theoreticalExtraction, maxInputSpeed);
+        
+        let oreConsumedPerSmelterAtClock = oreIn * smelterClock;
+        let smelters = actualExtraction / oreConsumedPerSmelterAtClock;
+        
+        let totalIngots = actualExtraction * (ingotOut / oreIn);
+        let outputBelts = totalIngots / maxOutputSpeed;
+
+        document.getElementById('orePerMin').innerText = formatNum(actualExtraction) + " / min";
+        document.getElementById('smeltersNeeded').innerText = formatNum(smelters);
+        document.getElementById('ingotsPerMin').innerText = formatNum(totalIngots) + " / min";
+        document.getElementById('beltsNeeded').innerText = Math.ceil(outputBelts) + " (" + formatNum(outputBelts) + ")";
+    }
+
+    [resourceSelect, puritySelect, minerSelect, beltInputSelect, beltOutputSelect].forEach(el => el.addEventListener('change', calcStandard));
+
+
+    // --- ALTERNATE RECIPE LOGIC ---
+    const altRecipeSelect = document.getElementById('altRecipe');
+    const altInputOre = document.getElementById('altInputOre');
+    const altMachineClockNum = document.getElementById('altMachineClockNum');
+
+    function calcAlternate() {
+        const selectedAlt = altRecipeSelect.options[altRecipeSelect.selectedIndex];
+        const primaryRate = parseFloat(selectedAlt.getAttribute('data-primary'));
+        const secName = selectedAlt.getAttribute('data-secname');
+        const secRate = parseFloat(selectedAlt.getAttribute('data-secrate'));
+        const outRate = parseFloat(selectedAlt.getAttribute('data-out'));
+        const machine = selectedAlt.getAttribute('data-machine');
+
+        const inputOre = parseFloat(altInputOre.value) || 0; 
+        const altMachineClock = (parseFloat(altMachineClockNum.value) || 100) / 100;
+
+        let baseMultiplier = inputOre / primaryRate;
+        let machinesNeeded = baseMultiplier / altMachineClock;
+        let secNeeded = baseMultiplier * secRate;
+        let ingotsProduced = baseMultiplier * outRate;
+
+        document.getElementById('machineType').innerText = machine;
+        document.getElementById('secResourceName').innerText = secName;
+        
+        document.getElementById('altMachinesNeeded').innerText = formatNum(machinesNeeded);
+        document.getElementById('altSecNeeded').innerText = formatNum(secNeeded) + " / min";
+        document.getElementById('altIngotsPerMin').innerText = formatNum(ingotsProduced) + " / min";
+    }
+
+    altRecipeSelect.addEventListener('change', calcAlternate);
+    altInputOre.addEventListener('input', calcAlternate);
+
+    // Initial calculations
+    calcStandard();
+    calcAlternate();
 </script>
 
 </body>
