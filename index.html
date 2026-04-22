@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FICSIT Smelting Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2b2b36;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #3b3b4a;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            width: 350px;
+            border-top: 5px solid #fa6a0a; /* FICSIT Orange */
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #fa6a0a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #cccccc;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            background-color: #2b2b36;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+        }
+        select:focus {
+            border-color: #fa6a0a;
+        }
+        .results {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #22222c;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .results p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .highlight {
+            color: #fa6a0a;
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Smelter Calc</h2>
+    
+    <div class="form-group">
+        <label for="resource">Resource</label>
+        <select id="resource">
+            <option value="iron">Iron Ore</option>
+            <option value="copper">Copper Ore</option>
+            <option value="caterium">Caterium Ore</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="purity">Node Purity</label>
+        <select id="purity">
+            <option value="0.5">Impure</option>
+            <option value="1" selected>Normal</option>
+            <option value="2">Pure</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="miner">Miner Level</label>
+        <select id="miner">
+            <option value="60">Mk.1</option>
+            <option value="120">Mk.2</option>
+            <option value="240">Mk.3</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="belt">Belt Speed (Max Output)</label>
+        <select id="belt">
+            <option value="60">Mk.1 (60/min)</option>
+            <option value="120">Mk.2 (120/min)</option>
+            <option value="270">Mk.3 (270/min)</option>
+            <option value="480">Mk.4 (480/min)</option>
+            <option value="780">Mk.5 (780/min)</option>
+            <option value="1200">Mk.6 (1200/min)</option>
+        </select>
+    </div>
+
+    <div class="results">
+        <p>Actual Ore Extracted: <br><span id="orePerMin" class="highlight">60 / min</span></p>
+        <p>Smelters Needed: <br><span id="smeltersNeeded" class="highlight">2</span></p>
+    </div>
+</div>
+
+<script>
+    // Grab all our dropdowns and display fields
+    const puritySelect = document.getElementById('purity');
+    const minerSelect = document.getElementById('miner');
+    const beltSelect = document.getElementById('belt');
+    const orePerMinDisplay = document.getElementById('orePerMin');
+    const smeltersNeededDisplay = document.getElementById('smeltersNeeded');
+
+    // Standard smelter consumes 30 ore per minute for Iron/Copper
+    const SMELTER_CONSUMPTION_RATE = 30; 
+
+    function calculateEfficiency() {
+        // 1. Get the values from the dropdowns
+        const purityMultiplier = parseFloat(puritySelect.value);
+        const minerBaseRate = parseFloat(minerSelect.value);
+        const maxBeltSpeed = parseFloat(beltSelect.value);
+
+        // 2. Calculate theoretical extraction rate
+        let theoreticalExtraction = minerBaseRate * purityMultiplier;
+
+        // 3. Cap the extraction by the belt speed (a Mk.3 miner on a pure node is bottlenecked by the belt)
+        let actualExtraction = Math.min(theoreticalExtraction, maxBeltSpeed);
+
+        // 4. Calculate how many smelters are needed
+        let smelters = actualExtraction / SMELTER_CONSUMPTION_RATE;
+
+        // 5. Update the UI
+        orePerMinDisplay.innerText = actualExtraction + " / min";
+        
+        // If it's a decimal, we format it nicely (e.g., 2.5 smelters means 2 at 100% and 1 at 50%)
+        smeltersNeededDisplay.innerText = Number.isInteger(smelters) ? smelters : smelters.toFixed(2);
+    }
+
+    // Add event listeners so the math updates instantly when a user changes a dropdown
+    puritySelect.addEventListener('change', calculateEfficiency);
+    minerSelect.addEventListener('change', calculateEfficiency);
+    beltSelect.addEventListener('change', calculateEfficiency);
+
+    // Run once on load to show initial math
+    calculateEfficiency();
+</script>
+
+</body>
+</html>
